@@ -326,10 +326,21 @@ func (m *SupportBundleManager) compressBundle() error {
 		return errors.Wrap(err, "fail to compress bundle")
 	}
 
+	ofArg := fmt.Sprintf("of=%s", m.getBundlefile())
+	cmd = exec.Command("dd", "if=/dev/zero", ofArg, "bs=1M", "count=100")
+	cmd.Dir = m.OutputDir
+	err = cmd.Run()
+	if err != nil {
+		logrus.Infof("fail to enlarge bundle")
+		return errors.Wrap(err, "fail to enlarge bundle")
+	}
+
 	size, err := m.getBundlefilesize()
 	if err != nil {
 		return errors.Wrap(err, "fail to get bundle file size")
 	}
+
+	logrus.Infof("bundle size %v", size)
 	m.status.SetFileinfo(m.bundleFileName, size)
 	return nil
 }
